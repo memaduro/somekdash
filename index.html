@@ -5,9 +5,269 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login | Somek</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Aqui seria colado o conteúdo HTML completo conforme construído no Canvas -->
+  <script>
+    let translations = {
+      pt: {
+        loginTitle: "Login do Cliente",
+        companyName: "Nome da Empresa",
+        password: "Senha",
+        enter: "Entrar",
+        dashboardTitle: "Dashboard de Produção de Peças Metálicas - Cliente",
+        logout: "Sair",
+        order: "Pedido",
+        item: "Item do Pedido",
+        client: "Cliente",
+        part: "Peça",
+        milestone: "Milestone Atual",
+        date: "Data Prevista",
+        status: "Ver status",
+        statusTitle: "Status do Pedido",
+        steps: ["Pedido Recebido", "Desenho Técnico Aprovado", "Matéria-prima Separada", "Corte Realizado", "Solda / Montagem", "Pintura / Expedição"]
+      },
+      en: {
+        loginTitle: "Client Login",
+        companyName: "Company Name",
+        password: "Password",
+        enter: "Login",
+        dashboardTitle: "Metal Parts Production Dashboard - Client",
+        logout: "Logout",
+        order: "Order",
+        item: "Order Item",
+        client: "Client",
+        part: "Part",
+        milestone: "Current Milestone",
+        date: "Due Date",
+        status: "View status",
+        statusTitle: "Order Status",
+        steps: ["Order Received", "Technical Drawing Approved", "Raw Material Ready", "Cutting Completed", "Welding / Assembly", "Painting / Shipping"]
+      }
+    };
+
+    let lang = 'pt';
+
+    function setLanguage(language) {
+      lang = language;
+      const t = translations[language];
+      document.getElementById("loginTitle").innerText = t.loginTitle;
+      document.getElementById("labelCliente").innerText = t.companyName;
+      document.getElementById("labelSenha").innerText = t.password;
+      document.getElementById("btnEntrar").innerText = t.enter;
+      document.getElementById("dashboardTitle").innerText = t.dashboardTitle;
+      document.getElementById("btnLogout").innerText = t.logout;
+      document.getElementById("thPedido").innerText = t.order;
+      document.getElementById("thItem").innerText = t.item;
+      document.getElementById("thCliente").innerText = t.client;
+      document.getElementById("thPeca").innerText = t.part;
+      document.getElementById("thMilestone").innerText = t.milestone;
+      document.getElementById("thData").innerText = t.date;
+      document.getElementById("statusTitle").innerText = t.statusTitle;
+    }
+
+    function autenticarCliente() {
+      const cliente = document.getElementById("cliente").value;
+      const senha = document.getElementById("senha").value;
+      if (cliente === "Ericsson" && senha === "1234") {
+        localStorage.setItem("cliente", cliente);
+        mostrarDashboard(cliente);
+      } else {
+        alert(lang === 'pt' ? "Credenciais incorretas. Tente novamente." : "Incorrect credentials. Please try again.");
+      }
+    }
+
+    function mostrarDashboard(cliente) {
+      document.getElementById("loginContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "block";
+      filtrarCliente(cliente);
+    }
+
+    function filtrarCliente(cliente) {
+      const linhas = document.querySelectorAll("tbody tr");
+      linhas.forEach(linha => {
+        linha.style.display = linha.dataset.cliente === cliente ? "" : "none";
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("cliente");
+      window.location.reload();
+    }
+
+    function drawStepProgress(currentMilestone, button) {
+      const container = document.getElementById("stepProgressContainer");
+      const progress = document.getElementById("stepProgress");
+      container.style.display = "block";
+      if (button) {
+        button.disabled = true;
+        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        button.classList.add('bg-gray-400', 'cursor-not-allowed');
+        button.innerText = 'Visualizado';
+        setTimeout(() => {
+          button.disabled = false;
+          button.classList.remove('bg-gray-400', 'cursor-not-allowed');
+          button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+          button.innerText = translations[lang].status;
+        }, 10000);
+      }
+
+      const milestones = translations[lang].steps;
+
+      progress.innerHTML = milestones.map((step, index) => {
+        const isActive = milestones.indexOf(currentMilestone) >= index;
+        return `<div class="flex items-center space-x-2">
+          <div class="flex items-center justify-center w-8 h-8 ${isActive ? 'bg-blue-600 animate-pulse' : 'bg-gray-300'} text-white rounded-full">
+            ${isActive ? '<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\" /></svg>' : index + 1}
+          </div>
+          <div class="ml-2 text-sm ${isActive ? 'font-bold text-blue-700' : 'text-gray-500'}">${step}</div>
+        </div>`;
+      }).join('<div class="h-6 border-l-2 border-gray-300 ml-3"></div>');
+    }
+
+    window.onload = () => {
+      const cliente = localStorage.getItem("cliente");
+      if (cliente) {
+        mostrarDashboard(cliente);
+      }
+      setLanguage('pt');
+    };
+  </script>
 </head>
-<body>
-  <h1>Este é o dashboard completo com login, pedidos e progresso!</h1>
+<body class="bg-gray-100 font-sans">
+  <div class="absolute top-4 left-4">
+    <select onchange="setLanguage(this.value)" class="border border-gray-300 rounded px-3 py-1">
+      <option value="pt">Português</option>
+      <option value="en">English</option>
+    </select>
+  </div>
+
+  <div id="loginContainer" class="min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <h2 id="loginTitle" class="text-2xl font-bold mb-6 text-center">Login do Cliente</h2>
+      <label id="labelCliente" class="block mb-2 font-medium">Nome da Empresa</label>
+      <input id="cliente" type="text" class="w-full px-4 py-2 border rounded mb-4">
+      <label id="labelSenha" class="block mb-2 font-medium">Senha</label>
+      <input id="senha" type="password" class="w-full px-4 py-2 border rounded mb-4">
+      <button id="btnEntrar" onclick="autenticarCliente()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Entrar</button>
+    </div>
+  </div>
+
+  <div id="dashboardContainer" class="max-w-6xl mx-auto p-6 hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h1 id="dashboardTitle" class="text-3xl font-bold text-center w-full">Dashboard</h1>
+      <button id="btnLogout" onclick="logout()" class="absolute top-6 right-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Sair</button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white shadow-md rounded-lg">
+        <thead>
+          <tr class="bg-blue-700 text-white text-left">
+            <th id="thPedido" class="py-3 px-6">Pedido</th>
+            <th id="thItem" class="py-3 px-6">Item</th>
+            <th id="thCliente" class="py-3 px-6">Cliente</th>
+            <th id="thPeca" class="py-3 px-6">Peça</th>
+            <th id="thMilestone" class="py-3 px-6">Milestone Atual</th>
+            <th id="thData" class="py-3 px-6">Data Prevista</th>
+            <th class="py-3 px-6">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20001</td>
+  <td class="py-3 px-6">A-01</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Caixa Técnica A</td>
+  <td class="py-3 px-6">Pedido Recebido</td>
+  <td class="py-3 px-6">06/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Pedido Recebido', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20002</td>
+  <td class="py-3 px-6">A-02</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Suporte Estrutural B</td>
+  <td class="py-3 px-6">Desenho Técnico Aprovado</td>
+  <td class="py-3 px-6">07/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Desenho Técnico Aprovado', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20003</td>
+  <td class="py-3 px-6">A-03</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Gabinete Metálico C</td>
+  <td class="py-3 px-6">Matéria-prima Separada</td>
+  <td class="py-3 px-6">08/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Matéria-prima Separada', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20004</td>
+  <td class="py-3 px-6">A-04</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Módulo D</td>
+  <td class="py-3 px-6">Corte Realizado</td>
+  <td class="py-3 px-6">09/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Corte Realizado', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20005</td>
+  <td class="py-3 px-6">A-05</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Painel E</td>
+  <td class="py-3 px-6">Solda / Montagem</td>
+  <td class="py-3 px-6">10/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Solda / Montagem', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20006</td>
+  <td class="py-3 px-6">A-06</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Tampa F</td>
+  <td class="py-3 px-6">Pintura / Expedição</td>
+  <td class="py-3 px-6">11/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Pintura / Expedição', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20007</td>
+  <td class="py-3 px-6">A-07</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Estrutura G</td>
+  <td class="py-3 px-6">Corte Realizado</td>
+  <td class="py-3 px-6">12/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Corte Realizado', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20008</td>
+  <td class="py-3 px-6">A-08</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Base H</td>
+  <td class="py-3 px-6">Matéria-prima Separada</td>
+  <td class="py-3 px-6">13/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Matéria-prima Separada', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20009</td>
+  <td class="py-3 px-6">A-09</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Gabinete I</td>
+  <td class="py-3 px-6">Pedido Recebido</td>
+  <td class="py-3 px-6">14/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Pedido Recebido', this)">Ver status</button></td>
+</tr>
+<tr data-cliente="Ericsson" class="border-b hover:bg-gray-100">
+  <td class="py-3 px-6">20010</td>
+  <td class="py-3 px-6">A-10</td>
+  <td class="py-3 px-6">Ericsson</td>
+  <td class="py-3 px-6">Módulo J</td>
+  <td class="py-3 px-6">Solda / Montagem</td>
+  <td class="py-3 px-6">15/05/2025</td>
+  <td class="py-3 px-6"><button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" onclick="drawStepProgress('Solda / Montagem', this)">Ver status</button></td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto p-6 hidden" id="stepProgressContainer">
+    <h2 id="statusTitle" class="text-2xl font-bold mb-4">Status do Pedido</h2>
+    <div id="stepProgress"></div>
+  </div>
 </body>
 </html>
